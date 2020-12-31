@@ -13,7 +13,7 @@ setuptools.setup(
     url="https://github.com/DArtagan/job_api",
     packages=setuptools.find_packages("src"),
     package_dir={"": "src"},
-    install_requires=["fastapi"],
+    install_requires=["fastapi", "pydantic"],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

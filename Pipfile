@@ -13,6 +13,8 @@ requests = "*"
 pre-commit = "*"
 pylint = "*"
 flake8 = "*"
+pytest-asyncio = "*"
+pylint-pytest = "*"
 
 [requires]
 python_version = "3.9"
