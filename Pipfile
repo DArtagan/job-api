@@ -1,0 +1,18 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+job-api = {editable = true, path = "."}
+
+[dev-packages]
+pytest = "*"
+uvicorn = "*"
+requests = "*"
+pre-commit = "*"
+pylint = "*"
+flake8 = "*"
+
+[requires]
+python_version = "3.9"
