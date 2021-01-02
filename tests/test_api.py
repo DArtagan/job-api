@@ -30,6 +30,18 @@ def api_server():
     proc.kill()
 
 
+@pytest.fixture
+def loaded_queue(api_server):
+    """Preload up the priority queue with several entries."""
+    submissions = [
+        {"submitterId": 5, "priority": 2, "name": "Two"},
+        {"submitterId": 7, "priority": 1, "name": "One"},
+        {"submitterId": 7, "priority": 3, "name": "Three"},
+    ]
+    for submission in submissions:
+        requests.post(URL + "/jobs", json=submission)
+
+
 def test_hello_world(api_server):
     """Whether the server turns on."""
     assert requests.get(URL).status_code == 200
@@ -45,3 +57,20 @@ def test_submit_job(api_server):
     response = requests.post(URL + "/jobs", json=submission)
     assert response.status_code == 200
     assert uuid.UUID(response.json()["jobId"], version=4)
+
+
+def test_get_next_job(loaded_queue):
+    """Get next job out of the priority queue."""
+    # TODO: Should this remove, "pop", the job from the queue.
+    response = requests.get(URL + "/job/next")
+    assert response.status_code == 200
+    payload = response.json()
+    assert uuid.UUID(payload["jobId"], version=4)
+    assert payload["priority"] == 1
+    assert payload["name"] == "One"
+
+
+def test_delete_next_job(loaded_queue):
+    """The next job in the queue can be deleted."""
+    response = requests.delete(URL + "/job/next")
+    assert response.status_code == 200

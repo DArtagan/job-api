@@ -4,23 +4,24 @@ FastAPI for priority job queue.
 import asyncio
 import uuid
 
-from fastapi import FastAPI
-from pydantic import BaseModel  # pylint: disable=no-name-in-module
+import fastapi
+import pydantic
 
 
-class Job(BaseModel):  # pylint: disable=too-few-public-methods
+class Job(pydantic.BaseModel):  # pylint: disable=no-member, too-few-public-methods
     """
     Job model
     """
 
+    jobId: uuid.UUID = pydantic.Field(default_factory=uuid.uuid4)
     submitterId: int
     priority: int
     name: str
 
 
-app = FastAPI()
+app = fastapi.FastAPI()
 queue = asyncio.PriorityQueue()
-queue = asyncio.Queue()
+jobs = {}
 
 
 @app.get("/")
@@ -36,6 +37,23 @@ async def submit_job(job: Job):
     """
     Add job to the priority queue.
     """
-    job_id = uuid.uuid4()
-    queue.put((job.priority, (job_id, job)))
-    return {"jobId": job_id}
+    jobs[job.jobId] = job
+    await queue.put((job.priority, job.jobId))
+    return {"jobId": job.jobId}
+
+
+@app.get("/job/next")
+async def get_next_job():
+    """
+    Get next job out of the priority queue.
+    """
+    job_id = await queue.get()
+    return jobs[job_id[1]]
+
+
+@app.delete("/job/next")
+async def delete_next_job():
+    """
+    Delete next job out of the priority queue.
+    """
+    await queue.get()
