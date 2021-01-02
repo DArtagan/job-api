@@ -61,7 +61,6 @@ def test_submit_job(api_server):
 
 def test_get_next_job(loaded_queue):
     """Get next job out of the priority queue."""
-    # TODO: Should this remove, "pop", the job from the queue.
     response = requests.get(URL + "/job/next")
     assert response.status_code == 200
     payload = response.json()
@@ -74,3 +73,19 @@ def test_delete_next_job(loaded_queue):
     """The next job in the queue can be deleted."""
     response = requests.delete(URL + "/job/next")
     assert response.status_code == 200
+
+
+def test_patch_next_job(loaded_queue):
+    """Patch: pop next job out of the priority queue."""
+    response = requests.patch(URL + "/job/next", json={"status": "processing"})
+    assert response.status_code == 200
+    payload = response.json()
+    assert uuid.UUID(payload["jobId"], version=4)
+    assert payload["priority"] == 1
+    assert payload["name"] == "One"
+
+
+def test_patch_next_job_bad_request_payload(loaded_queue):
+    """Patch: with a bad request payload get the next job."""
+    response = requests.patch(URL + "/job/next", json={"status": "nope"})
+    assert response.status_code == 400

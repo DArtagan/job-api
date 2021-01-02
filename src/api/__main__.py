@@ -17,6 +17,17 @@ class Job(pydantic.BaseModel):  # pylint: disable=no-member, too-few-public-meth
     submitterId: int
     priority: int
     name: str
+    _status: str = "new"
+
+
+class StatusRequest(
+    pydantic.BaseModel
+):  # pylint: disable=no-member, too-few-public-methods
+    """
+    Request containing a Status.
+    """
+
+    status: str
 
 
 app = fastapi.FastAPI()
@@ -47,8 +58,24 @@ async def get_next_job():
     """
     Get next job out of the priority queue.
     """
-    job_id = await queue.get()
-    return jobs[job_id[1]]
+    # TODO: This might not be a very concurrency safe approach.
+    job = queue._queue[0]
+    return jobs[job[1]]
+
+
+@app.patch("/job/next")
+async def patch_next_job(status: StatusRequest):
+    """
+    Patch: pop next job out of the priority queue.
+
+    The payload of the incoming request should be {"status": "processing"}.
+    """
+    if not status.status == "processing":
+        raise fastapi.HTTPException(
+            status_code=400, detail='Request must have {"status": "processing"}'
+        )
+    job = await queue.get()
+    return jobs[job[1]]
 
 
 @app.delete("/job/next")
@@ -56,4 +83,5 @@ async def delete_next_job():
     """
     Delete next job out of the priority queue.
     """
-    await queue.get()
+    job = await queue.get()
+    del jobs[job[1]]
