@@ -1,5 +1,5 @@
 """
-FastAPI for priority job queue.
+FastAPI for Priority Job Queue.
 """
 import asyncio
 import datetime
@@ -34,7 +34,7 @@ class StatusRequest(
     status: str
 
 
-app = fastapi.FastAPI()
+app = fastapi.FastAPI(title="Job Priority Queue")
 queue = asyncio.PriorityQueue()
 jobs = {}
 processing = {}
@@ -43,9 +43,9 @@ processing = {}
 @app.get("/")
 async def root():
     """
-    Simple welcome message for GETs to the root.
+    Simple welcome message for GETs to the root, directing to the documentation.
     """
-    return {"message": "Hello World"}
+    return {"message": "Welcome!  Check out the interactive documentation at /docs"}
 
 
 @app.post("/jobs")
