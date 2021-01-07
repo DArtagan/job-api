@@ -52,6 +52,8 @@ async def root():
 async def submit_job(job: Job):
     """
     Add job to the priority queue.
+
+    jobId is optional and one will be generated.
     """
     jobs[job.jobId] = job
     await queue.put((job.priority, job.jobId))
@@ -61,9 +63,9 @@ async def submit_job(job: Job):
 @app.get("/jobs/next")
 async def get_next_job():
     """
-    Get next job out of the priority queue.
+    Get next job out of the priority queue.  The queue will not be altered.
 
-    If the queue is empty, return an empty response.
+    If the queue is empty, an empty response will be returned.
     """
     try:
         job = queue._queue[0]  # pylint: disable=protected-access
@@ -79,9 +81,13 @@ async def get_next_job():
 @app.patch("/jobs/next")
 async def patch_next_job(status: StatusRequest):
     """
-    Patch: pop next job out of the priority queue, put it in the processing list.
+    Patch: pop next job out of the priority queue.
+
+    Internally sets the job aside while processing, processing jobs that exceed
+    the timeout will be placed back in the queue.
 
     The payload of the incoming request should be {"status": "processing"}.
+    If the queue is empty, an empty response will be returned.
     """
     if not status.status == "processing":
         raise fastapi.HTTPException(
@@ -117,7 +123,7 @@ async def delete_next_job():
         del jobs[job[1]]
 
 
-@app.delete("/job/{job_id}")
+@app.delete("/jobs/{job_id}")
 async def delete_job(job_id):
     """
     Delete given job from the processing jobs.

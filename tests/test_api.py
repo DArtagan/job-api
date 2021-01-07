@@ -150,7 +150,7 @@ def test_delete_job_by_id(api_server):
     requests.post(URL + "/jobs", json=submission)
     get_response = requests.get(URL + "/jobs/next")
     assert get_response.json()["jobId"] == str(given_uuid)
-    delete_response = requests.delete(URL + f"/job/{given_uuid}")
+    delete_response = requests.delete(URL + f"/jobs/{given_uuid}")
     assert delete_response.status_code == 200
     empty_response = requests.get(URL + "/jobs/next")
     assert empty_response.json() == {}
@@ -192,7 +192,7 @@ def test_patch_next_job_no_timeout(loaded_queue):
     assert "Two" in second_response.json()["name"]
     assert not first_job_id == second_job_id
 
-    delete_response = requests.delete(URL + f"/job/{first_job_id}")
+    delete_response = requests.delete(URL + f"/jobs/{first_job_id}")
     assert delete_response.status_code == 200
     time.sleep(TIMEOUT + 1)
 
