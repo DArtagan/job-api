@@ -2,6 +2,8 @@
 
 Demo: https://job-api.immortalkeep.com/
 
+Documentation: https://job-api.immortalkeep.com/docs
+
 Docker image: dartagan/job-api
 
 
